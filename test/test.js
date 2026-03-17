@@ -1,6 +1,7 @@
 var assert = require('assert');
 var fork = require('child_process').fork;
 var kill = require('..');
+const { spawnSync } = require('child_process');
 
 describe('kill()', function(){
     it('should kill a process', function(done){ 
@@ -33,9 +34,6 @@ describe('kill()', function(){
     })
 
     it('should reject invalid pid', function(done){
-        var p = fork('./test/spin')
-        assert.ok(p.pid)
-
         kill('rm -rf /dev/null', function(err) {
             assert.ok(typeof err === 'object')
             return done()
@@ -43,9 +41,6 @@ describe('kill()', function(){
     })
 
     it('should reject invalid pids even if no callback', function(done){
-        var p = fork('./test/spin')
-        assert.ok(p.pid)
-
         try {
             kill('rm -rf /dev/null')
             assert.fail('should have thrown')
@@ -53,5 +48,16 @@ describe('kill()', function(){
             assert.ok(typeof err === 'object')
             return done();
         }
+    })
+
+    it('should self kill even if multiple sub-branches of processes', function(done){ 
+        var p = fork('./test/split_and_spin')
+        assert.ok(p.pid)
+
+        p.on('exit', function(code, signal){
+            assert.ok(code || signal, 'should return an exit code')
+            return done()
+        });
+        setTimeout(() => kill(p.pid), 100)
     })
 })
