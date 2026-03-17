@@ -53,7 +53,7 @@ module.exports = function (pid, signal, callback) {
 function killAll (tree, signal, callback) {
     var killed = {};
     try {
-        Object.keys(tree).forEach(function (pid) {
+        Object.keys(tree).reverse().forEach(function (pid) {
             tree[pid].forEach(function (pidpid) {
                 if (!killed[pidpid]) {
                     killPid(pidpid, signal);
